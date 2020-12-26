@@ -1,6 +1,7 @@
 ﻿namespace RayTracing {
 	class Ray {
 		public Vector3 origin, dir;
+		private Color4 interColor = Color4.zero;
 		private Color4 color = Color4.zero;
 		private Color4 refrColor = Color4.zero;
 		private Color4 reflColor = Color4.zero;
@@ -41,12 +42,13 @@
 					}
 				}
 			}
-			if (interSphere.surface == Surface.EMISSION) {
-				return interSphere.color;
-			}
 			if (first) {
-				interPos = origin + dir * inertT;
-				normal = (interPos - interSphere.center).normalized;
+				interPos = origin + dir * inertT;  // 交点坐标
+				normal = (interPos - interSphere.center).normalized;  // 法线，由内向外
+			}
+			interColor = interSphere.GetColor(interPos);
+			if (interSphere.surface == Surface.EMISSION) {
+				return interColor;
 			}
 			// 反射
 			if (reflectNum > 0) {
@@ -62,28 +64,26 @@
 					reflColor = ray.Render();
 				}
 			} else {
-				return interSphere.color;
+				return interColor;
 			}
 			if (interSphere.surface == Surface.SPEC && interSphere.refr > 0f) {  // 折射
 				if (refrRay == null && fresnel != 1f) {
-					float sinb = dir * normal.normalized;
-					if (sinb < 0 || sinb * interSphere.refr > 1) {  // 从外部射入或者不发生全反射，此处不知道公式对不对
-						Vector3 refract = Vector3.Refract(dir, normal, interSphere.refr).normalized;
-						refrRay = new Ray(interPos, refract, reflectNum - 1, interSphere);
-						fresnel = Mathf.Abs(sinb);  // 这个变量其实不是菲涅尔
+					if (Vector3.Refract(dir, normal, interSphere.refr, out Vector3 refrDir)) {
+						refrRay = new Ray(interPos, refrDir, reflectNum - 1, interSphere);
+						fresnel = 1f - Mathf.Abs(dir * normal);  // 这个变量其实不是菲涅尔
 					} else {
-						fresnel = 1f;
+						fresnel = 1f;  // 全反射
 					}
 				}
 				if (refrRay != null) {
 					float r = 1f / ++depth;
 					refrColor = refrColor * (1 - r) + refrRay.Render() * r;
-					color = interSphere.color * (1 - interSphere.refl) + reflColor * interSphere.refl * fresnel + refrColor * interSphere.refl * (1 - fresnel);
+					color = interColor * (1 - interSphere.refl) + reflColor * interSphere.refl * fresnel + refrColor * interSphere.refl * (1 - fresnel);
 				} else {
-					color = interSphere.color * (1 - interSphere.refl) + reflColor * interSphere.refl;
+					color = interColor * (1 - interSphere.refl) + reflColor * interSphere.refl;
 				}
 			} else {
-				color = interSphere.color * (1 - interSphere.refl) + reflColor * interSphere.refl;
+				color = interColor * (1 - interSphere.refl) + reflColor * interSphere.refl;
 			}
 			first = false;
 			return color;

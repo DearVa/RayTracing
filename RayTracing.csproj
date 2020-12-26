@@ -83,6 +83,7 @@
     <Compile Include="Ray.cs" />
     <Compile Include="Scene.cs" />
     <Compile Include="Sphere.cs" />
+    <Compile Include="Texture.cs" />
     <Compile Include="Vector3.cs" />
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
