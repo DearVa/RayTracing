@@ -1,4 +1,6 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
+using System.Diagnostics;
 using System.Drawing.Imaging;
 using System.Threading.Tasks;
 
@@ -16,19 +18,19 @@ namespace RayTracing {
 
 		readonly static Bitmap test = new Bitmap("./block.jpg");
 
-		public static readonly Sphere[] spheres = new Sphere[] {
-			new Sphere(new Vector3(1e5f - 60f, 40.8f, 81.6f), 1e5f, Color.LightBlue, Surface.EMISSION, 0.5f, 0f, 1f),  // left
-			new Sphere(new Vector3(-1e5f + 60f, 40.8f, 81.6f), 1e5f, Color.Red, Surface.EMISSION, 0.5f, 0f, 1f),  // right
-			new Sphere(new Vector3(50f, 40.8f, 1e5f - 50f), 1e5f, Color.LightCyan, Surface.DIFFUSE, 0.5f, 0f, 0f),  // back
-			new Sphere(new Vector3(50f, 40.8f, -1e5f + 70f), 1e5f, Color.LightYellow, Surface.DIFFUSE, 0.5f, 0f, 0f),  // front
-			new Sphere(new Vector3(0, 1e5f - 50f, 81.6f), 1e5f, Color.Pink, Surface.DIFFUSE, 0.5f, 0f, 0f),  // top
-			new Sphere(new Vector3(0, -1e5f + 33f, 81.6f), 1e5f, Color.LimeGreen, Surface.DIFFUSE, 0.5f, 0f, 0f),  // bottom
+		public static readonly Sphere[] spheres = new Sphere[] {  // 对场景做出较大的修改，注意图像是上下颠倒的
+			new Sphere(new Vector3(-1e5f - 60f, 0f, 50f), 1e5f, Color.LightBlue, Surface.EMISSION, 0.8f, 0f, 1f),  // left
+			new Sphere(new Vector3(1e5f + 60f, 0f, 50f), 1e5f, Color.Red, Surface.EMISSION, 0.8f, 0f, 1f),  // right
+			new Sphere(new Vector3(0f, 0f, -1e5f - 50f), 1e5f, Color.LightCyan, Surface.DIFFUSE, 0.8f, 0f, 0f),  // back
+			new Sphere(new Vector3(0f, 0f, 1e5f + 70f), 1e5f, Color.LightYellow, Surface.DIFFUSE, 0.8f, 0f, 0f),  // front
+			new Sphere(new Vector3(0, 1e5f + 33f, 50f), 1e5f, Color.Pink, Surface.DIFFUSE, 0.8f, 0f, 0f),  // bottom
+			new Sphere(new Vector3(0, -1e5f - 50f, 50f), 1e5f, Color.LimeGreen, Surface.DIFFUSE, 0.8f, 0f, 0f),  // top
 
 			new Sphere(new Vector3(-35f, 16.5f, 50f), 16.5f, Color.Blue, Surface.SPEC, 0.9f, 0f, 0f),  // mirr
-			new Sphere(new Vector3(0f, 16.5f, 58f), 16.5f, Color.Pink, Surface.SPEC, 1f, 1.33f, 0f),  // glass
-			new Sphere(new Vector3(35f, 16.5f, 50f), 16.5f, test, 1f, 1f, Surface.DIFFUSE, 0.5f, 0f, 0f),  // glass
+			new Sphere(new Vector3(0f, 16.5f, 58f), 16.5f, Color.Pink, Surface.SPEC, 1f, 1.5f, 0f),  // glass
+			new Sphere(new Vector3(35f, 16.5f, 50f), 16.5f, test, 1f, 1f, Surface.DIFFUSE, 0.5f, 0f, 0f),  // tex
 			
-			new Sphere(new Vector3(0f, -40f, 81.6f), 15f, Color.White, Surface.EMISSION, 0f, 0f, 2f),  // light
+			new Sphere(new Vector3(0f, -50f, 60), 10f, Color.White, Surface.EMISSION, 0f, 0f, 5f),  // light
 		};
 
 		private readonly int width, height;
@@ -57,42 +59,44 @@ namespace RayTracing {
 
 		public void Run() {
 			int frame = 0;
-			Task[] tasks = new Task[taskNum];
+			int[] rows = new int[height];
+			for (int y = 0; y < height; y++) {
+				rows[y] = y;
+			}
+			Stopwatch sw = new Stopwatch();
+			sw.Start();
 			while (true) {
-				if (!running) {
-					return;
-				}
+				long time = sw.ElapsedMilliseconds;
 				bitmapData = bitmap.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format24bppRgb);
 				unsafe {
 					ptr = (byte*)bitmapData.Scan0.ToPointer();
 				}
-				for (int i = 0; i < taskNum; i++) {
-					int j = i;
-					tasks[i] = Task.Factory.StartNew(() => InternalRun(j));
-				}
-				Task.WaitAll(tasks);
+				//for (int y = 0; y < height; y++) {
+				//	InternalRun(y);
+				//}
+				//Parallel.For(0, height, (y) => InternalRun(y));  // 并行加速
+				Parallel.ForEach(rows, (y) => InternalRun(y));  // 并行加速，ForEach效率貌似会更高
 				bitmap.UnlockBits(bitmapData);
 				if (save) {
-					bitmap.Save(System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop) + "/save.png");
+					bitmap.Save(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "/save.png");
 					save = false;
 				}
 				g.DrawImage(bitmap, 0, 0);
-				g.DrawString($"{++frame}", font, Brushes.Black, 10, 10);
+				g.DrawString($"Frame Count: {++frame}", font, Brushes.Black, 10, 10);
+				g.DrawString($"FPS: {1000d / (sw.ElapsedMilliseconds - time):F}", font, Brushes.Black, 10, 20);
 			}
 		}
 
-		private void InternalRun(int i) {
-			Vector3.InitRand(i);
+		private void InternalRun(int y) {
+			Vector3.InitRand(y);
+			int dy = y * bitmapData.Stride;
 			unsafe {
-				for (int y = 0; y < height; y++) {
-					int dy = y * bitmapData.Stride;
-					for (int x = i; x < width; x += taskNum) {
-						Color color = (Color)rays[x, y].Render();
-						int dx = x * 3 + dy;
-						ptr[dx] = color.B;
-						ptr[dx + 1] = color.G;
-						ptr[dx + 2] = color.R;
-					}
+				for (int x = 0; x < width; x++) {
+					Color color = (Color)rays[x, y].Render();
+					int dx = x * 3 + dy;
+					ptr[dx] = color.B;
+					ptr[dx + 1] = color.G;
+					ptr[dx + 2] = color.R;
 				}
 			}
 		}

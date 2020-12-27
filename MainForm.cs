@@ -20,8 +20,8 @@ namespace RayTracing {
 			scene.save = true;
 		}
 
-		private void MainForm_FormClosed(object sender, FormClosedEventArgs e) {
-			scene.running = false;
+		private void Exit_Click(object sender, EventArgs e) {
+			Environment.Exit(0);  // 彻底退出程序
 		}
 	}
 }

@@ -23,9 +23,10 @@ namespace RayTracing {
 		}
 
 		public static explicit operator Color(Color4 c) {
-			c.R *= c.L;
-			c.G *= c.L;
-			c.B *= c.L;
+			float l = Mathf.Min(c.L, 1f);  // 先把亮度限制在1以内
+			c.R *= l;
+			c.G *= l;
+			c.B *= l;
 			int r, g, b;
 			r = c.R > 255f ? 255 : (int)c.R;
 			g = c.G > 255f ? 255 : (int)c.G;
@@ -39,6 +40,10 @@ namespace RayTracing {
 
 		public static Color4 operator *(Color4 c, float f) {
 			return new Color4(c.R * f, c.G * f, c.B * f, c.L * f);
+		}
+
+		public static Color4 operator /(Color4 c, float f) {
+			return new Color4(c.R / f, c.G / f, c.B / f, c.L / f);
 		}
 
 		public static Color4 zero = new Color4(0, 0, 0, 0);

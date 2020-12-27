@@ -25,29 +25,42 @@ namespace RayTracing {
 		/// </summary>
 		private void InitializeComponent() {
 			this.save = new System.Windows.Forms.Button();
+			this.exit = new System.Windows.Forms.Button();
 			this.SuspendLayout();
 			// 
 			// save
 			// 
-			this.save.Location = new System.Drawing.Point(1332, 784);
+			this.save.Location = new System.Drawing.Point(1251, 784);
 			this.save.Name = "save";
 			this.save.Size = new System.Drawing.Size(75, 23);
 			this.save.TabIndex = 0;
-			this.save.Text = "保存";
+			this.save.Text = "保存到桌面";
 			this.save.UseVisualStyleBackColor = true;
 			this.save.Click += new System.EventHandler(this.Save_Click);
+			// 
+			// exit
+			// 
+			this.exit.ForeColor = System.Drawing.Color.Red;
+			this.exit.Location = new System.Drawing.Point(1332, 784);
+			this.exit.Name = "exit";
+			this.exit.Size = new System.Drawing.Size(75, 23);
+			this.exit.TabIndex = 1;
+			this.exit.Text = "退出";
+			this.exit.UseVisualStyleBackColor = true;
+			this.exit.Click += new System.EventHandler(this.Exit_Click);
 			// 
 			// MainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(1419, 819);
+			this.Controls.Add(this.exit);
 			this.Controls.Add(this.save);
-			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+			this.DoubleBuffered = true;
+			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
 			this.MaximizeBox = false;
 			this.Name = "MainForm";
-			this.Text = "光线追踪测试";
-			this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MainForm_FormClosed);
+			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
 			this.Shown += new System.EventHandler(this.MainForm_Shown);
 			this.ResumeLayout(false);
 
@@ -56,6 +69,7 @@ namespace RayTracing {
 		#endregion
 
 		private System.Windows.Forms.Button save;
+		private System.Windows.Forms.Button exit;
 	}
 }
 

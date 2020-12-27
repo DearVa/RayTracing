@@ -4,7 +4,7 @@ using System.Drawing;
 namespace RayTracing {
 	struct Vector3 {
 		[ThreadStatic]
-		static Random rand;
+		public static Random rand;
 		public float x, y, z;
 
 		public static void InitRand(int offset) {
@@ -57,15 +57,17 @@ namespace RayTracing {
 		}
 
 		public static Vector3 Reflect(Vector3 inDirection, Vector3 inNormal) {
-			float num = -2f * Dot(inNormal, inDirection);
+			float num = -2f * inNormal * inDirection;
 			return new Vector3(num * inNormal.x + inDirection.x, num * inNormal.y + inDirection.y, num * inNormal.z + inDirection.z);
 		}
 
-		public static bool Refract(Vector3 inDirection, Vector3 inNormal, float refractivity, out Vector3 refrDir) {
-			float num = Dot(inNormal, inDirection);
-			float d = 1f - refractivity * refractivity * (1 - num * num);
-			if (d > 0f) {
-				refrDir = refractivity * (inDirection - inNormal * num) - inNormal * Mathf.Sqrt(d);
+		public static bool Refract(Vector3 inDirection, Vector3 inNormal, float refrRatio, out Vector3 refrDir) {
+			float cos = inNormal * inDirection;
+			float sin2 = 1f - cos * cos;
+			float sinr2 = refrRatio * refrRatio * sin2;
+			float cosr2 = 1f - sinr2;
+			if (cosr2 > 0f) {
+				refrDir = (inDirection - inNormal * cos) * refrRatio - inNormal * Mathf.Sqrt(cosr2);
 				return true;
 			}
 			refrDir = zero;
@@ -80,10 +82,16 @@ namespace RayTracing {
 		}
 
 		public static Vector3 RandInUnitHemisphere(Vector3 normal) {
-			float x = (float)(rand.NextDouble() * 2d - 1d);
-			float y = (float)rand.NextDouble();
-			float z = (float)(rand.NextDouble() * 2d - 1d);
-			return new Vector3(x, y, z).normalized;
+			float r1 = (float)(2 * Mathf.PI * rand.NextDouble());
+			float r2 = (float)rand.NextDouble(), r2s = Mathf.Sqrt(r2);
+			Vector3 u;
+			if (Mathf.Abs(normal.x) > 0.1f) {
+				u = Cross(up, normal).normalized;
+			} else {
+				u = Cross(one, normal).normalized;
+			}
+			Vector3 v = Cross(normal, u);
+			return (u * Mathf.Cos(r1) * r2s + v * Mathf.Sin(r1) * r2s + normal * Mathf.Sqrt(1 - r2)).normalized;
 		}
 
 		public static Vector3 Normalize(Vector3 value) {

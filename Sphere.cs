@@ -17,13 +17,13 @@ namespace RayTracing {
 		/// <summary>
 		/// 反射率
 		/// </summary>
-		public float refl;
+		public float reflRatio;
 		/// <summary>
 		/// 折射率
 		/// </summary>
-		public float refr;
+		public float refrRatio;
 
-		private float tillX, tillY;
+		public float tillX, tillY;
 		private readonly int width, height;
 		private readonly BitmapData bitmapData;
 		private Color4 color;
@@ -33,8 +33,8 @@ namespace RayTracing {
 			this.radius = radius;
 			this.color = (Color4)color;
 			this.surface = surface;
-			this.refl = refl;
-			this.refr = refr;
+			this.reflRatio = refl;
+			this.refrRatio = refr;
 			if (surface == Surface.EMISSION) {
 				this.color.L = emis;  // 发光强度
 			}
@@ -52,8 +52,8 @@ namespace RayTracing {
 				ptr = (byte*)bitmapData.Scan0.ToPointer();
 			}
 			this.surface = surface;
-			this.refl = refl;
-			this.refr = refr;
+			this.reflRatio = refl;
+			this.refrRatio = refr;
 			if (surface == Surface.EMISSION) {
 				color.L = emis;  // 发光强度
 			}
@@ -65,6 +65,9 @@ namespace RayTracing {
 			} else {
 				float u = Mathf.Atan((pos.z - center.z) / (pos.x - center.x)) / 2f / Mathf.PI;  // 球面投影求贴图uv
 				float v = Mathf.Asin((pos.y - center.y) / radius) / Mathf.PI + 0.5f;
+				if (float.IsNaN(u) || float.IsNaN(v)) {
+					return Color4.zero;
+				}
 				int x = (int)Mathf.Abs(u * width * tillX) % width;
 				int y = (int)Mathf.Abs(v * height * tillY) % height;
 				int d = (y * width + x) * 3;
