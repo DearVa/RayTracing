@@ -36,12 +36,8 @@ namespace RayTracing {
 		}
 
 		public Color4 GetColor(float u, float v) {
-			if (u < 0f) {
-				u = -u;
-			}
-			if (v < 0f) {
-				v = -v;
-			}
+			u = Mathf.Max(Mathf.Min(u, 1f), 0f);
+			v = Mathf.Max(Mathf.Min(v, 1f), 0f);
 			int x = (int)(u * texture.width * tillX) % texture.width;
 			int y = (int)(v * texture.height * tillY) % texture.height;
 			int d = (y * texture.width + x) * 3;

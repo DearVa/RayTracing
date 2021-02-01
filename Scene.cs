@@ -67,7 +67,7 @@ namespace RayTracing {
 			scene.TriangleGroups[1].RefrRatio = 1.5f;
 
 			// Rubby, Diffuse
-			scene.TriangleGroups[2].Material = m3;
+			scene.TriangleGroups[2].Material = m9;
 			scene.TriangleGroups[2].ReflRatio = 0.5f;
 			scene.TriangleGroups[2].RefrRatio = 0.0f;
 

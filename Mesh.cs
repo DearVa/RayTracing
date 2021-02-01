@@ -183,9 +183,10 @@ namespace RayTracing {
 					if (t > 0.0001 && t < interT) {
 						interT = t;
 						if (Material.Textured) {
-							Vector2 uv1 = tr.Texcoods[0] - tr.Texcoods[1];
-							Vector2 uv2 = tr.Texcoods[0] - tr.Texcoods[2];
-							Vector2 uv = uv1 * u + uv2 * v;
+							Vector2 uv1 = tr.Texcoods[1] - tr.Texcoods[0];
+							Vector2 uv2 = tr.Texcoods[2] - tr.Texcoods[0];
+							Vector2 uv;
+							uv = uv1 * u + uv2 * v + tr.Texcoods[0];
 							color = Material.GetColor(uv);
 						} else {
 							color = Material.color;
