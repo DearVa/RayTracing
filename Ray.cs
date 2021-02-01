@@ -36,17 +36,18 @@
 				//return Color4.zero;
 				return Scene.AmbientColor;
 			}
-			if (interTG.Material.surface == Surface.EMISSION) {
+			Material mat = interTG.Material;
+			if (mat.Surface == Surface.EMISSION) {
 				return interColor;
 			}
 			// 反射
 			if (reflectNum > 0) {
-				if (interTG.Material.surface == Surface.DIFFUSE) {  // 漫反射
+				if (mat.Surface == Surface.DIFFUSE) {  // 漫反射
 					Ray diffRay = new Ray(interPos, Vector3.RandInUnitHemisphere(normal), reflectNum - 1);  // 每次都不一样，局部变量
 					reflColorSum += diffRay.Render();
 					reflColorNum++;
 					reflColor = reflColorSum / reflColorNum;
-				} else if (interTG.Material.surface == Surface.SPECULAR) {  // 镜面反射
+				} else if (mat.Surface == Surface.SPECULAR) {  // 镜面反射
 					if (reflRay == null) {
 						reflRay = new Ray(interPos, Vector3.Reflect(dir, normal), reflectNum - 1);
 					}
@@ -55,9 +56,9 @@
 			} else {
 				return interColor;
 			}
-			if (interTG.Material.surface == Surface.SPECULAR && interTG.RefrRatio > 0f) {  // 折射
+			if (mat.Surface == Surface.SPECULAR && mat.RefrRatio > 0f) {  // 折射
 				if (refrRay == null && fresnel != 1f) {
-					if (Vector3.Refract(dir, normal, interTG.RefrRatio, out Vector3 refrect)) {
+					if (Vector3.Refract(dir, normal, mat.RefrRatio, out Vector3 refrect)) {
 						refrRay = new Ray(interPos, refrect, reflectNum - 1);
 						fresnel = 1f - Mathf.Abs(dir * normal);
 					} else {
@@ -66,12 +67,12 @@
 				}
 				if (refrRay != null) {
 					refrColor = refrRay.Render();
-					color = interColor * (1 - interTG.ReflRatio) + reflColor * interTG.ReflRatio * fresnel + refrColor * interTG.ReflRatio * (1 - fresnel);
+					color = interColor * (1 - mat.ReflRatio) + reflColor * mat.ReflRatio * fresnel + refrColor * mat.ReflRatio * (1 - fresnel);
 				} else {
-					color = interColor * (1 - interTG.ReflRatio) + reflColor * interTG.ReflRatio;
+					color = interColor * (1 - mat.ReflRatio) + reflColor * mat.ReflRatio;
 				}
 			} else {
-				color = interColor * (1 - interTG.ReflRatio) + reflColor * interTG.ReflRatio;
+				color = interColor * (1 - mat.ReflRatio) + reflColor * mat.ReflRatio;
 			}
 			first = false;
 			return color;

@@ -13,6 +13,7 @@ namespace RayTracing {
 
 		public Texture(string filePath) {
 			bitmap = new Bitmap(filePath);
+			bitmap.RotateFlip(RotateFlipType.Rotate180FlipY);
 			width = bitmap.Width;
 			height = bitmap.Height;
 			bitmapData = bitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);

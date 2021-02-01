@@ -28,6 +28,7 @@ namespace RayTracing {
 		public static Mesh LoadFromObj(string fileName) {
 			using (var sr = new StreamReader(new FileStream(fileName, FileMode.Open))) {
 				Mesh mesh = new Mesh();
+				Dictionary<string, Material> ms = null;
 				List<Vector3> vs = new List<Vector3>();    // 顶点
 				List<Vector3> ns = new List<Vector3>();     // 法线
 				List<Vector2> ts = new List<Vector2>();   // 纹理坐标
@@ -49,7 +50,7 @@ namespace RayTracing {
 						} else if (line.StartsWith("o")) {
 							string[] data = line.Split(' ');
 							if (data.Length != 2) {
-								throw new Exception("OBJ格式错误");
+								throw new Exception($"第{i}行，OBJ格式错误");
 							}
 							if (triangleGroup != null) {
 								triangleGroup.GenerateAABB();
@@ -59,6 +60,21 @@ namespace RayTracing {
 						} else if (line.StartsWith("f")) {
 							Triangle triangle = ReadLine(vs, ns, ts, line);
 							triangleGroup.Triangles.Add(triangle);
+						} else if (line.StartsWith("mtllib")) {
+							string[] data = line.Split(' ');
+							if (data.Length != 2) {
+								throw new Exception($"第{i}行，OBJ格式错误");
+							}
+							ms = Material.LoadFromMtl(Path.Combine(Path.GetDirectoryName(fileName), data[1]));
+						} else if (line.StartsWith("usemtl")) {
+							string[] data = line.Split(' ');
+							if (data.Length != 2) {
+								throw new Exception($"第{i}行，OBJ格式错误");
+							}
+							if (ms == null) {
+								throw new Exception($"第{i}行，材质未加载");
+							}
+							triangleGroup.Material = ms[data[1]];
 						}
 					} catch (Exception e) {
 						throw new Exception($"第{i}行", e);
@@ -135,14 +151,6 @@ namespace RayTracing {
 		public List<Triangle> Triangles = new List<Triangle>();
 		public string Name;
 		public Material Material;
-		/// <summary>
-		/// 反射率
-		/// </summary>
-		public float ReflRatio;
-		/// <summary>
-		/// 折射率
-		/// </summary>
-		public float RefrRatio;
 
 		private AABB aabb;
 
@@ -189,7 +197,7 @@ namespace RayTracing {
 							uv = uv1 * u + uv2 * v + tr.Texcoods[0];
 							color = Material.GetColor(uv);
 						} else {
-							color = Material.color;
+							color = Material.Color;
 						}
 						normal = tr.Normal;
 						if (normal * ray.dir > 0) {

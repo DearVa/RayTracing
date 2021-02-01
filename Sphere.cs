@@ -32,7 +32,7 @@ namespace RayTracing {
 				}
 				return material.GetColor(u, v);
 			} else {
-				return material.color;
+				return material.Color;
 			}
 		}
 

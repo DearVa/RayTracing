@@ -16,20 +16,6 @@ namespace RayTracing {
 		readonly Bitmap bitmap;
 		readonly Graphics g;
 
-		readonly static Texture t1 = new Texture("./block.jpg");
-		readonly static Material m1 = new Material(Surface.EMISSION, Color.White, 1f);
-		readonly static Material m2 = new Material(Surface.EMISSION, Color.Red, 1f);
-		readonly static Material m3 = new Material(Surface.DIFFUSE, Color.LightCyan, 0f);
-		readonly static Material m4 = new Material(Surface.DIFFUSE, Color.LightYellow, 0f);
-		readonly static Material m5 = new Material(Surface.DIFFUSE, Color.Pink, 0f);
-		readonly static Material m6 = new Material(Surface.DIFFUSE, Color.LimeGreen, 0f);
-
-		readonly static Material m7 = new Material(Surface.SPECULAR, Color.Blue, 0f);
-		readonly static Material m8 = new Material(Surface.SPECULAR, Color.OrangeRed, 0f);
-		readonly static Material m9 = new Material(Surface.DIFFUSE, t1, 1f, 1f);
-
-		readonly static Material m0 = new Material(Surface.EMISSION, Color.White, 5f);
-
 		public static Mesh scene;
 
 		//public static Color4 AmbientColor = new Color4(255f, 255f, 255f, 0.3f);
@@ -56,48 +42,6 @@ namespace RayTracing {
 			}
 
 			scene = Mesh.LoadFromObj(@".\Mesh\Scene.obj");
-			// Ceiling, Emission
-			scene.TriangleGroups[0].Material = m1;
-			scene.TriangleGroups[0].ReflRatio = 0.8f;
-			scene.TriangleGroups[0].RefrRatio = 0.0f;
-
-			// Cylinder, Glass
-			scene.TriangleGroups[1].Material = m8;
-			scene.TriangleGroups[1].ReflRatio = 1.0f;
-			scene.TriangleGroups[1].RefrRatio = 1.5f;
-
-			// Rubby, Diffuse
-			scene.TriangleGroups[2].Material = m9;
-			scene.TriangleGroups[2].ReflRatio = 0.5f;
-			scene.TriangleGroups[2].RefrRatio = 0.0f;
-
-			// Cube, Specular
-			scene.TriangleGroups[3].Material = m7;
-			scene.TriangleGroups[3].ReflRatio = 0.9f;
-			scene.TriangleGroups[3].RefrRatio = 0.0f;
-
-			// Room, Diffuse
-			scene.TriangleGroups[4].Material = m9;
-			scene.TriangleGroups[4].ReflRatio = 0.8f;
-			scene.TriangleGroups[4].RefrRatio = 0.0f;
-
-			for (int i = 5; i < scene.TriangleGroups.Count; i++) {
-				scene.TriangleGroups[i].Material = m4;
-				scene.TriangleGroups[i].ReflRatio = 0.9f;
-				scene.TriangleGroups[i].RefrRatio = 0.0f;
-			}
-
-			//scene.TriangleGroups[0].Material = m7;
-			//scene.TriangleGroups[0].ReflRatio = 0.9f;
-			//scene.TriangleGroups[0].RefrRatio = 0.0f;
-
-			//scene.TriangleGroups[1].Material = m7;
-			//scene.TriangleGroups[1].ReflRatio = 0.9f;
-			//scene.TriangleGroups[1].RefrRatio = 0.0f;
-
-			//scene.TriangleGroups[2].Material = m1;
-			//scene.TriangleGroups[2].ReflRatio = 0.9f;
-			//scene.TriangleGroups[2].RefrRatio = 0.0f;
 		}
 
 		private delegate void Action();
