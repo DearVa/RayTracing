@@ -57,10 +57,12 @@ namespace RayTracing {
 			this.Controls.Add(this.exit);
 			this.Controls.Add(this.save);
 			this.DoubleBuffered = true;
-			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
 			this.MaximizeBox = false;
 			this.Name = "MainForm";
+			this.ShowIcon = false;
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+			this.Text = "RayTracing";
 			this.Shown += new System.EventHandler(this.MainForm_Shown);
 			this.ResumeLayout(false);
 

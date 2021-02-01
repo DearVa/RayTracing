@@ -8,8 +8,7 @@
 		private Color4 reflColorSum = Color4.zero;
 		private int reflColorNum = 0;
 		private float inertT = float.PositiveInfinity;
-		private Sphere interSphere;
-		private readonly Sphere fromSphere;
+		private TriangleGroup interTG;
 		private readonly int reflectNum = 10;
 		private Vector3 interPos, normal;
 		private Ray reflRay = null, refrRay = null;
@@ -21,61 +20,45 @@
 			this.dir = dir.normalized;
 		}
 
-		public Ray(Vector3 origin, Vector3 dir, int reflectNum, Sphere fromSphere) {
+		public Ray(Vector3 origin, Vector3 dir, int reflectNum) {
 			this.origin = origin;
 			this.dir = dir.normalized;
 			this.reflectNum = reflectNum;
-			this.fromSphere = fromSphere;
 		}
 
 		public Color4 Render() {
-			//if (Vector3.rand.NextDouble() < color.L / 2) {
-			//	return color;
-			//}
-			if (interSphere == null) {
-				for (int i = 0; i < Scene.spheres.Length; i++) {
-					var sphere = Scene.spheres[i];
-					if (sphere == fromSphere) {
-						continue;
-					}
-					float t = sphere.Intersect(this);
-					if (t > 0.01f && t < inertT) {
-						inertT = t;
-						interSphere = sphere;
-					}
-				}
-			}
-			if (interSphere == null) {
-				return Color4.zero;
-			}
 			if (first) {
+				inertT = Scene.scene.Intersect(this, ref interTG, ref normal, ref interColor);
 				interPos = origin + dir * inertT;  // 交点坐标
-				normal = (interPos - interSphere.center).normalized;  // 法线，从内向外
+				first = false;
 			}
-			interColor = interSphere.GetColor(interPos);
-			if (interSphere.surface == Surface.EMISSION) {
+			if (interTG == null) {
+				//return Color4.zero;
+				return Scene.AmbientColor;
+			}
+			if (interTG.Material.surface == Surface.EMISSION) {
 				return interColor;
 			}
 			// 反射
 			if (reflectNum > 0) {
-				if (interSphere.surface == Surface.DIFFUSE) {  // 漫反射
-					Ray diffRay = new Ray(interPos, Vector3.RandInUnitHemisphere(normal), reflectNum - 1, interSphere);  // 每次都不一样，局部变量
+				if (interTG.Material.surface == Surface.DIFFUSE) {  // 漫反射
+					Ray diffRay = new Ray(interPos, Vector3.RandInUnitHemisphere(normal), reflectNum - 1);  // 每次都不一样，局部变量
 					reflColorSum += diffRay.Render();
 					reflColorNum++;
 					reflColor = reflColorSum / reflColorNum;
-				} else if (interSphere.surface == Surface.SPEC) {  // 镜面反射
+				} else if (interTG.Material.surface == Surface.SPECULAR) {  // 镜面反射
 					if (reflRay == null) {
-						reflRay = new Ray(interPos, Vector3.Reflect(dir, normal), reflectNum - 1, interSphere);
+						reflRay = new Ray(interPos, Vector3.Reflect(dir, normal), reflectNum - 1);
 					}
 					reflColor = reflRay.Render();
 				}
 			} else {
 				return interColor;
 			}
-			if (interSphere.surface == Surface.SPEC && interSphere.refrRatio > 0f) {  // 折射
+			if (interTG.Material.surface == Surface.SPECULAR && interTG.RefrRatio > 0f) {  // 折射
 				if (refrRay == null && fresnel != 1f) {
-					if (Vector3.Refract(dir, normal, interSphere.refrRatio, out Vector3 refrect)) {
-						refrRay = new Ray(interPos, refrect, reflectNum - 1, interSphere);
+					if (Vector3.Refract(dir, normal, interTG.RefrRatio, out Vector3 refrect)) {
+						refrRay = new Ray(interPos, refrect, reflectNum - 1);
 						fresnel = 1f - Mathf.Abs(dir * normal);
 					} else {
 						fresnel = 1f;  // 全反射
@@ -83,15 +66,19 @@
 				}
 				if (refrRay != null) {
 					refrColor = refrRay.Render();
-					color = interColor * (1 - interSphere.reflRatio) + reflColor * interSphere.reflRatio * fresnel + refrColor * interSphere.reflRatio * (1 - fresnel);
+					color = interColor * (1 - interTG.ReflRatio) + reflColor * interTG.ReflRatio * fresnel + refrColor * interTG.ReflRatio * (1 - fresnel);
 				} else {
-					color = interColor * (1 - interSphere.reflRatio) + reflColor * interSphere.reflRatio;
+					color = interColor * (1 - interTG.ReflRatio) + reflColor * interTG.ReflRatio;
 				}
 			} else {
-				color = interColor * (1 - interSphere.reflRatio) + reflColor * interSphere.reflRatio;
+				color = interColor * (1 - interTG.ReflRatio) + reflColor * interTG.ReflRatio;
 			}
 			first = false;
 			return color;
+		}
+
+		public override string ToString() {
+			return $"Origin: {origin} Dir: {dir}";
 		}
 	}
 }

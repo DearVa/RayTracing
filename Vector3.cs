@@ -2,7 +2,7 @@
 using System.Drawing;
 
 namespace RayTracing {
-	struct Vector3 {
+	public struct Vector3 {
 		[ThreadStatic]
 		public static Random rand;
 		public float x, y, z;
@@ -64,10 +64,10 @@ namespace RayTracing {
 		public static bool Refract(Vector3 inDirection, Vector3 inNormal, float refrRatio, out Vector3 refrDir) {
 			float cos = inNormal * inDirection;
 			float sin2 = 1f - cos * cos;
-			float sinr2 = refrRatio * refrRatio * sin2;
+			float sinr2 = sin2 / refrRatio / refrRatio;
 			float cosr2 = 1f - sinr2;
 			if (cosr2 > 0f) {
-				refrDir = (inDirection - inNormal * cos) * refrRatio - inNormal * Mathf.Sqrt(cosr2);
+				refrDir = (inDirection - inNormal * cos) / refrRatio - inNormal * Mathf.Sqrt(cosr2);
 				return true;
 			}
 			refrDir = zero;
@@ -311,6 +311,10 @@ namespace RayTracing {
 
 		public static Vector3 operator /(Vector3 a, float d) {
 			return new Vector3(a.x / d, a.y / d, a.z / d);
+		}
+
+		public static Vector3 operator /(float d, Vector3 a) {
+			return new Vector3(d / a.x, d / a.y, d / a.z);
 		}
 
 		public static bool operator ==(Vector3 lhs, Vector3 rhs) {

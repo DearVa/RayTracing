@@ -21,7 +21,7 @@ namespace RayTracing {
 		}
 
 		private void Exit_Click(object sender, EventArgs e) {
-			Environment.Exit(0);  // 彻底退出程序
+			scene.stop = true;
 		}
 	}
 }
