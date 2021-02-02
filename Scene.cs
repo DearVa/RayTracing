@@ -64,10 +64,6 @@ namespace RayTracing {
 				unsafe {
 					ptr = (byte*)bitmapData.Scan0.ToPointer();
 				}
-				//for (int y = 0; y < height; y++) {
-				//	InternalRun(y);
-				//}
-				//Parallel.For(0, height, (y) => InternalRun(y));  // 并行加速
 				Parallel.ForEach(rows, (y) => InternalRun(y));  // 并行加速，ForEach效率貌似会更高
 				bitmap.UnlockBits(bitmapData);
 				if (save) {
@@ -75,6 +71,7 @@ namespace RayTracing {
 					save = false;
 				}
 				g.DrawImage(bitmap, 0, 0);
+				g.FillRectangle(Brushes.White, new Rectangle(10, 10, 130, 25));
 				g.DrawString($"Frame Count: {++frame}", font, Brushes.Black, 10, 10);
 				g.DrawString($"FPS: {1000d / (sw.ElapsedMilliseconds - time):F}", font, Brushes.Black, 10, 20);
 				Console.WriteLine(frame);

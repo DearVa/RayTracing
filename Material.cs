@@ -34,16 +34,29 @@ namespace RayTracing {
 			Textured = false;
 		}
 
-		public Material(Surface surface, Color4 color, float reflRatio, float refrRatio) {
+		public Material(Surface surface, Color4 color4, float reflRatio, float refrRatio) {
 			Surface = surface;
-			Color = color;
+			Color = color4;
 			ReflRatio = reflRatio;
 			RefrRatio = refrRatio;
 			Textured = false;
 		}
 
-		public Material(Surface surface, Texture texture, float tillX, float tillY, float reflRatio, float refrRatio) {
+		public Material(Surface surface, Color color, float emission, Texture texture, float tillX, float tillY, float reflRatio, float refrRatio) {
 			Surface = surface;
+			Color = (Color4)color;
+			Color.L = emission;
+			Texture = texture;
+			TillX = tillX;
+			TillY = tillY;
+			ReflRatio = reflRatio;
+			RefrRatio = refrRatio;
+			Textured = true;
+		}
+
+		public Material(Surface surface, Color4 color4, Texture texture, float tillX, float tillY, float reflRatio, float refrRatio) {
+			Surface = surface;
+			Color = color4;
 			Texture = texture;
 			TillX = tillX;
 			TillY = tillY;
@@ -59,7 +72,7 @@ namespace RayTracing {
 			int y = (int)(v * Texture.height * TillY) % Texture.height;
 			int d = (y * Texture.width + x) * 3;
 			unsafe {
-				return new Color4(Texture.ptr[d + 2], Texture.ptr[d + 1], Texture.ptr[d], Color.L);
+				return new Color4(Texture.ptr[d + 2] * Color.R / 255f, Texture.ptr[d + 1] * Color.G / 255f, Texture.ptr[d] * Color.B / 255f, Color.L);
 			}
 		}
 
@@ -88,7 +101,7 @@ namespace RayTracing {
 						}
 						if (name != null) {
 							if (texture != null) {
-								material = new Material(surface, texture, tillX, tillY, refl, refr);
+								material = new Material(surface, color, emis, texture, tillX, tillY, refl, refr);
 							} else {
 								material = new Material(surface, color, emis, refl, refr);
 							}
@@ -101,7 +114,7 @@ namespace RayTracing {
 							name = null;
 						}
 						name = data[1];
-					} else if (line.StartsWith("Kd")) {
+					} else if (line.StartsWith("Kd") || line.StartsWith("Tf")) {
 						var data = line.Split(' ');
 						if (data.Length != 4) {
 							throw new Exception($"第{i}行，MTL文件错误");
@@ -151,7 +164,7 @@ namespace RayTracing {
 				}
 				if (name != null) {
 					if (texture != null) {
-						material = new Material(surface, texture, tillX, tillY, refl, refr);
+						material = new Material(surface, color, emis, texture, tillX, tillY, refl, refr);
 					} else {
 						material = new Material(surface, color, emis, refl, refr);
 					}
