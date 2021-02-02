@@ -8,5 +8,5 @@ C#写的光追渲染器
 ![Image text](https://github.com/DearVa/RayTracing/blob/master/save.png)
 
 TODO:  
-~~+ Improved Color Mixture(The current usage is incorrect)~~  
++ ~~Improved Color Mixture(The current usage is incorrect)~~  
 + BVH tree  
