@@ -41,7 +41,7 @@ namespace RayTracing {
 				}
 			}
 
-			scene = Mesh.LoadFromObj(@".\Mesh\Scene.obj");
+			scene = Mesh.LoadFromObj(@".\Mesh\Glass.obj");
 		}
 
 		private delegate void Action();
@@ -64,7 +64,7 @@ namespace RayTracing {
 				unsafe {
 					ptr = (byte*)bitmapData.Scan0.ToPointer();
 				}
-				Parallel.ForEach(rows, (y) => InternalRun(y));  // 并行加速，ForEach效率貌似会更高
+				Parallel.ForEach(rows, y => InternalRun(y));  // 并行加速，ForEach效率貌似会更高
 				bitmap.UnlockBits(bitmapData);
 				if (save) {
 					bitmap.Save(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "/save.png");
@@ -85,6 +85,7 @@ namespace RayTracing {
 			unsafe {
 				for (int x = 0; x < width; x++) {
 					Color color = (Color)rays[x, y].Render();
+					//Color color = rays[x, y].Render().LToColor();
 					int dx = x * 3 + dy;
 					ptr[dx] = color.B;
 					ptr[dx + 1] = color.G;

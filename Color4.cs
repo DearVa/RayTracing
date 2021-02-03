@@ -3,6 +3,11 @@
 namespace RayTracing {
 	struct Color4 {
 		public float R, G, B, L;
+		public float ReflectRatio {
+			get {
+				return (R + G + B) / 3f;
+			}
+		}
 
 		public Color4(float r, float g, float b) {
 			R = r;
@@ -34,8 +39,13 @@ namespace RayTracing {
 			return Color.FromArgb(r, g, b);
 		}
 
+		public Color LToColor() {
+			int l = (int)(Mathf.Min(L, 1f) * 255f);  // 先把亮度限制在1以内
+			return Color.FromArgb(l, l, l);
+		}
+
 		public static Color4 Mix(Color4 a, Color4 b) {
-			return new Color4(a.R * b.R, a.G * b.G, a.B * b.B, b.L * (a.R + a.G + a.B) / 3f);
+			return new Color4(a.R * b.R, a.G * b.G, a.B * b.B, b.L * a.ReflectRatio);
 		}
 
 		public static Color4 operator +(Color4 a, Color4 b) {

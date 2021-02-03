@@ -8,7 +8,7 @@
 		private Color4 reflColorSum = Color4.zero;
 		private int reflColorNum = 0;
 		private TriangleGroup interTG;
-		private readonly int reflectNum = 5;
+		private readonly int reflectNum = 10;
 		private Vector3 interPos, normal;
 		private Ray reflRay = null, refrRay = null;
 		private float fresnel = 0f;
@@ -29,6 +29,7 @@
 			if (first) {
 				float inertT = Scene.scene.Intersect(this, ref interTG, ref normal, ref interColor);
 				interPos = origin + dir * inertT;  // 交点坐标
+				first = false;
 			}
 			if (interTG == null) {
 				return Scene.AmbientColor;
@@ -39,13 +40,18 @@
 			}
 			if (reflectNum > 0) {
 				if (mat.Surface == Surface.DIFFUSE) {  // 漫反射
-					Ray diffRay = new Ray(interPos, Vector3.RandInUnitHemisphere(normal), reflectNum - 1);  // 每次都不一样，局部变量
-					Color4 color4 = diffRay.Render();
-					if (color4.L > 0f) {
-						reflColorSum += color4;
-						reflColorNum++;
-						reflColor = reflColorSum / reflColorNum;
-						color = Color4.Mix(interColor, reflColor);
+					//if (interColor.ReflectRatio < 0.1f) {
+					//	return interColor;
+					//}
+					if (Vector3.rand.NextDouble() < interColor.ReflectRatio * 3) {  // 反射率小的时候就降低渲染概率，比如纯黑的墙壁
+						Ray diffRay = new Ray(interPos, Vector3.RandInUnitHemisphere(normal), reflectNum - 1);  // 每次都不一样，局部变量
+						Color4 color4 = diffRay.Render();
+						if (color4.L > 0f) {
+							reflColorSum += color4;
+							reflColorNum++;
+							reflColor = reflColorSum / reflColorNum;
+							color = Color4.Mix(interColor, reflColor);
+						}
 					}
 				} else if (mat.Surface == Surface.SPECULAR) {  // 镜面反射
 					if (reflRay == null) {
@@ -74,7 +80,6 @@
 			} else {
 				return interColor;
 			}
-			first = false;
 			return color;
 		}
 

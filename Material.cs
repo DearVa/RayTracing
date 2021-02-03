@@ -138,13 +138,13 @@ namespace RayTracing {
 						surface = Surface.SPECULAR;
 						refr = float.Parse(data[1]);
 						refl = 1f;  // 默认反射为1
-					} else if (line.StartsWith("Ns")) {  // 暂时用100-粗糙度代表反射强度
+					} else if (line.StartsWith("Ns")) {  // 暂时用Ns高光强度代表反射强度
 						var data = line.Split(' ');
 						if (data.Length != 2) {
 							throw new Exception($"第{i}行，MTL文件错误");
 						}
 						surface = Surface.SPECULAR;
-						refl = 1f - int.Parse(data[1]) / 100f;
+						refl = int.Parse(data[1]) / 100f;
 					} else if (line.StartsWith("map_Kd")) {
 						var data = line.Split(' ');
 						if (data.Length == 1) {
